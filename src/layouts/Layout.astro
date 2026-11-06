@@ -1,0 +1,90 @@
+---
+import Header from "../components/Header.astro";
+import Footer from "../components/Footer.astro";
+
+interface Props {
+	title?: string;
+	description?: string;
+}
+
+const { title, description = "Vertex Concrete – concrete contractors." } = Astro.props;
+const pageTitle = title ? `${title} | Vertex Concrete` : "Vertex Concrete";
+---
+<!doctype html>
+<html lang="en">
+	<head>
+		<meta charset="utf-8" />
+		<meta name="viewport" content="width=device-width" />
+		<meta name="description" content={description} />
+		<link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+		<link rel="icon" href="/favicon.ico" />
+		<meta name="generator" content={Astro.generator} />
+		<title>{pageTitle}</title>
+	</head>
+	<body>
+		<Header />
+		<main>
+			<slot />
+		</main>
+		<Footer />
+	</body>
+</html>
+
+<style is:global>
+	:root {
+		/* Placeholder tokens – swap these once a theme is chosen */
+		--color-bg: #ffffff;
+		--color-text: #1f2937;
+		--color-muted: #6b7280;
+		--color-primary: #374151;
+		--color-surface: #f3f4f6;
+		--color-border: #e5e7eb;
+		--max-width: 1100px;
+	}
+
+	*,
+	*::before,
+	*::after {
+		box-sizing: border-box;
+	}
+
+	html,
+	body {
+		margin: 0;
+	}
+
+	body {
+		min-height: 100vh;
+		display: flex;
+		flex-direction: column;
+		font-family: system-ui, -apple-system, 'Segoe UI', Roboto, Arial, sans-serif;
+		color: var(--color-text);
+		background: var(--color-bg);
+		line-height: 1.6;
+	}
+
+	main {
+		flex: 1;
+	}
+
+	.container {
+		width: 100%;
+		max-width: var(--max-width);
+		margin: 0 auto;
+		padding: 0 1rem;
+	}
+
+	.section {
+		padding: 3rem 0;
+	}
+
+	.button {
+		display: inline-block;
+		padding: 0.7rem 1.25rem;
+		background: var(--color-primary);
+		color: #fff;
+		text-decoration: none;
+		border-radius: 4px;
+		font-weight: 600;
+	}
+</style>
