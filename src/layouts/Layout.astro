@@ -1,90 +1,294 @@
 ---
-import Header from "../components/Header.astro";
-import Footer from "../components/Footer.astro";
-
 interface Props {
-	title?: string;
-	description?: string;
+	title: string;
+	description: string;
 }
-
-const { title, description = "Vertex Concrete – concrete contractors." } = Astro.props;
-const pageTitle = title ? `${title} | Vertex Concrete` : "Vertex Concrete";
+const { title, description } = Astro.props;
 ---
 <!doctype html>
 <html lang="en">
 	<head>
 		<meta charset="utf-8" />
-		<meta name="viewport" content="width=device-width" />
+		<meta name="viewport" content="width=device-width, initial-scale=1" />
 		<meta name="description" content={description} />
 		<link rel="icon" type="image/svg+xml" href="/favicon.svg" />
 		<link rel="icon" href="/favicon.ico" />
-		<meta name="generator" content={Astro.generator} />
-		<title>{pageTitle}</title>
+		<link rel="preconnect" href="https://fonts.googleapis.com" />
+		<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+		<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500&family=Fraunces:ital,wght@0,400;0,700;1,400;1,700&display=swap" rel="stylesheet" />
+		<title>{title}</title>
 	</head>
 	<body>
-		<Header />
-		<main>
-			<slot />
-		</main>
-		<Footer />
+		<slot />
 	</body>
 </html>
 
 <style is:global>
 	:root {
-		/* Placeholder tokens – swap these once a theme is chosen */
-		--color-bg: #ffffff;
-		--color-text: #1f2937;
-		--color-muted: #6b7280;
-		--color-primary: #374151;
-		--color-surface: #f3f4f6;
-		--color-border: #e5e7eb;
-		--max-width: 1100px;
+		--ink: #1a1017;
+		--cream: #f6ecdc;
+		--mustard: #f0b23f;
+		--orange: #e8794a;
+		--rose: #c4506a;
+		--plum: #2a1330;
+		--teal: #17474f;
+		--glass: rgba(255, 255, 255, 0.07);
+		--glass-line: rgba(255, 255, 255, 0.2);
 	}
-
-	*,
-	*::before,
-	*::after {
+	* {
 		box-sizing: border-box;
 	}
-
-	html,
+	html {
+		scroll-behavior: smooth;
+	}
 	body {
 		margin: 0;
+		font-family: "DM Sans", system-ui, sans-serif;
+		line-height: 1.6;
+		color: var(--cream);
+		background: var(--ink);
+	}
+	/* film grain over everything */
+	body::after {
+		content: "";
+		position: fixed;
+		inset: 0;
+		pointer-events: none;
+		z-index: 50;
+		opacity: 0.1;
+		background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='200'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+	}
+	h1, h2, h3 {
+		font-family: Fraunces, Georgia, serif;
+		margin: 0 0 0.75rem;
+		line-height: 1.1;
+	}
+	h2 {
+		font-size: clamp(2.2rem, 8vw, 3.5rem);
+		font-style: italic;
+		margin-bottom: 2rem;
+	}
+	.eyebrow {
+		margin: 0 0 0.75rem;
+		font-size: 0.8rem;
+		letter-spacing: 0.3em;
+		text-transform: uppercase;
+		color: var(--mustard);
+	}
+	section {
+		position: relative;
+		scroll-margin-top: 3rem;
+		padding: 7rem max(1.25rem, calc((100% - 720px) / 2));
 	}
 
-	body {
+	/* hero: retro sun */
+	#home {
+		--r: min(70vw, 42vh);
 		min-height: 100vh;
+		min-height: 100svh;
 		display: flex;
 		flex-direction: column;
-		font-family: system-ui, -apple-system, 'Segoe UI', Roboto, Arial, sans-serif;
-		color: var(--color-text);
-		background: var(--color-bg);
-		line-height: 1.6;
+		align-items: center;
+		justify-content: center;
+		text-align: center;
+		padding-bottom: 14vh;
+		background:
+			radial-gradient(circle at 50% 100%,
+				var(--mustard) 0 calc(var(--r) * 0.55),
+				var(--orange) calc(var(--r) * 0.55) calc(var(--r) * 0.72),
+				var(--rose) calc(var(--r) * 0.72) calc(var(--r) * 0.88),
+				transparent calc(var(--r) * 0.88)),
+			linear-gradient(to bottom, var(--ink), var(--plum) 60%, #5a2347);
+	}
+	#home::after {
+		content: "";
+		position: absolute;
+		left: 0;
+		right: 0;
+		bottom: 0;
+		height: 18px;
+		background: linear-gradient(to bottom,
+			var(--mustard) 33%, var(--orange) 33% 66%, var(--teal) 66%);
+	}
+	#home h1 {
+		font-size: clamp(3.2rem, 15vw, 8rem);
+		font-weight: 700;
+		line-height: 0.95;
+		text-shadow: 0 4px 30px rgba(0, 0, 0, 0.5);
+	}
+	#home p:not(.eyebrow) {
+		font-family: Fraunces, Georgia, serif;
+		font-style: italic;
+		font-size: 1.3rem;
+		margin: 0 0 2rem;
 	}
 
-	main {
-		flex: 1;
+	/* dark sections with colour blobs behind glass */
+	#services {
+		background:
+			radial-gradient(circle at 95% 5%, rgba(240, 178, 63, 0.35), transparent 45%),
+			radial-gradient(circle at 0% 95%, rgba(196, 80, 106, 0.4), transparent 50%),
+			var(--plum);
+	}
+	#about {
+		background:
+			radial-gradient(circle at 5% 15%, rgba(232, 121, 74, 0.4), transparent 45%),
+			radial-gradient(circle at 100% 100%, rgba(240, 178, 63, 0.2), transparent 45%),
+			var(--teal);
+	}
+	#about p:not(.eyebrow) {
+		font-family: Fraunces, Georgia, serif;
+		font-size: 1.4rem;
+		line-height: 1.5;
+		margin: 0;
+	}
+	#gallery {
+		background:
+			radial-gradient(circle at 90% 90%, rgba(23, 71, 79, 0.9), transparent 55%),
+			radial-gradient(circle at 0% 0%, rgba(232, 121, 74, 0.3), transparent 45%),
+			var(--plum);
+	}
+	#contact {
+		background:
+			radial-gradient(circle at 100% 0%, rgba(23, 71, 79, 0.9), transparent 50%),
+			radial-gradient(circle at 0% 100%, rgba(240, 178, 63, 0.35), transparent 50%),
+			#4a1d33;
+	}
+	footer section {
+		background: var(--ink);
+		padding-top: 2rem;
+		padding-bottom: 2rem;
+		text-align: center;
+		color: rgba(246, 236, 220, 0.6);
 	}
 
-	.container {
-		width: 100%;
-		max-width: var(--max-width);
-		margin: 0 auto;
-		padding: 0 1rem;
+	/* glass cards */
+	.card {
+		background: var(--glass);
+		border: 1px solid var(--glass-line);
+		border-radius: 20px;
+		padding: 1.5rem;
+		margin-bottom: 1rem;
+		backdrop-filter: blur(14px);
+		-webkit-backdrop-filter: blur(14px);
+		box-shadow: 0 10px 40px rgba(0, 0, 0, 0.25);
+	}
+	.card h3 {
+		font-size: 1.4rem;
+	}
+	.card p {
+		margin: 0;
+	}
+	.card a {
+		color: var(--mustard);
+	}
+	#services .cards {
+		counter-reset: n;
+	}
+	#services .card h3::before {
+		counter-increment: n;
+		content: "0" counter(n);
+		display: block;
+		font-size: 0.8rem;
+		letter-spacing: 0.2em;
+		color: var(--mustard);
+	}
+	.photo {
+		aspect-ratio: 4 / 5;
+		display: grid;
+		place-items: center;
+		font-family: Fraunces, Georgia, serif;
+		font-style: italic;
+		font-size: 1.4rem;
+		margin: 0;
+	}
+	.photo:nth-child(odd) {
+		background: linear-gradient(160deg, rgba(240, 178, 63, 0.35), var(--glass));
+	}
+	.photo:nth-child(even) {
+		background: linear-gradient(160deg, rgba(196, 80, 106, 0.4), var(--glass));
 	}
 
-	.section {
-		padding: 3rem 0;
-	}
-
-	.button {
+	a.button, button.button {
 		display: inline-block;
-		padding: 0.7rem 1.25rem;
-		background: var(--color-primary);
-		color: #fff;
+		padding: 0.85rem 2rem;
+		background: var(--mustard);
+		color: var(--ink);
 		text-decoration: none;
-		border-radius: 4px;
-		font-weight: 600;
+		text-transform: uppercase;
+		letter-spacing: 0.15em;
+		font: inherit;
+		font-size: 0.85rem;
+		font-weight: 500;
+		border: 0;
+		border-radius: 999px;
+		cursor: pointer;
+	}
+	form {
+		margin-top: 2rem;
+	}
+	form label {
+		display: block;
+		margin-bottom: 1rem;
+		font-size: 0.8rem;
+		letter-spacing: 0.15em;
+		text-transform: uppercase;
+	}
+	input, textarea {
+		display: block;
+		width: 100%;
+		margin-top: 0.35rem;
+		padding: 0.8rem 1rem;
+		font: inherit;
+		font-size: 1rem;
+		letter-spacing: normal;
+		text-transform: none;
+		color: var(--cream);
+		background: var(--glass);
+		border: 1px solid var(--glass-line);
+		border-radius: 12px;
+		backdrop-filter: blur(14px);
+		-webkit-backdrop-filter: blur(14px);
+	}
+	input:focus, textarea:focus {
+		outline: 2px solid var(--mustard);
+	}
+
+	nav {
+		position: fixed;
+		top: 0;
+		left: 0;
+		right: 0;
+		z-index: 10;
+		display: flex;
+		justify-content: center;
+		gap: 1.5rem;
+		padding: 1rem;
+		overflow-x: auto;
+		background: transparent;
+		transition: background 0.3s;
+	}
+	nav a {
+		color: var(--cream);
+		text-decoration: none;
+		font-size: 0.8rem;
+		letter-spacing: 0.2em;
+		text-transform: uppercase;
+	}
+	nav.scrolled {
+		background: rgba(26, 16, 23, 0.45);
+		backdrop-filter: blur(14px);
+		-webkit-backdrop-filter: blur(14px);
+		border-bottom: 1px solid var(--glass-line);
+	}
+	@media (min-width: 600px) {
+		.cards {
+			display: grid;
+			grid-template-columns: 1fr 1fr;
+			gap: 1rem;
+		}
+		.cards .card {
+			margin: 0;
+		}
 	}
 </style>
