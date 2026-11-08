@@ -176,6 +176,9 @@ const base = import.meta.env.BASE_URL.replace(/\/?$/, "/");
 		line-height: 1.5;
 		margin: 0;
 	}
+	#about p:not(.eyebrow) + p {
+		margin-top: 1rem;
+	}
 	footer section {
 		background: var(--ink);
 		padding-top: 2rem;
