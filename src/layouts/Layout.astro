@@ -356,20 +356,68 @@ const { title, description } = Astro.props;
 		left: 0;
 		right: 0;
 		z-index: 10;
+		--nav-gap: 1.5rem;
 		display: flex;
 		justify-content: center;
-		gap: 1.5rem;
+		align-items: center;
+		gap: var(--nav-gap);
 		padding: 1rem;
 		overflow-x: auto;
 		background: transparent;
 		transition: background 0.3s;
 	}
 	nav a {
+		flex-shrink: 0;
 		color: var(--cream);
 		text-decoration: none;
 		font-size: 0.8rem;
 		letter-spacing: 0.2em;
 		text-transform: uppercase;
+	}
+	/* centre logo: takes no space at the top of the page, then opens up and
+	   zooms in once the hero has scrolled past */
+	.nav-logo {
+		--logo-size: 2.5rem;
+		display: flex;
+		justify-content: center; /* keeps the image centred while the box is narrow */
+		width: 0;
+		height: var(--logo-size);
+		margin: -0.75rem calc(var(--nav-gap) / -2);
+		opacity: 0;
+		transform: scale(0.2);
+		transition:
+			width 0.4s ease,
+			margin 0.4s ease,
+			opacity 0.3s ease,
+			transform 0.45s cubic-bezier(0.34, 1.56, 0.64, 1);
+	}
+	.nav-logo img {
+		flex-shrink: 0;
+		width: var(--logo-size);
+		height: var(--logo-size);
+	}
+	nav.show-logo .nav-logo {
+		width: var(--logo-size);
+		margin-inline: 0;
+		opacity: 1;
+		transform: scale(1);
+	}
+	@media (max-width: 420px) {
+		nav {
+			--nav-gap: 0.9rem;
+			padding-inline: 0.75rem;
+		}
+		nav a {
+			letter-spacing: 0.12em;
+		}
+		.nav-logo {
+			--logo-size: 2rem;
+		}
+	}
+	@media (prefers-reduced-motion: reduce) {
+		.nav-logo {
+			transition: none;
+		}
 	}
 	nav.scrolled {
 		background: rgba(21, 19, 17, 0.5);
