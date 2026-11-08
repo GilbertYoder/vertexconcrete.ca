@@ -72,15 +72,19 @@ const galleryFull = await Promise.all(
 	</section>
 
 	<section id="services">
-		<p class="eyebrow">What we pour</p>
-		<h2>Services</h2>
-		<div class="cards">
-			{services.map((s) => (
-				<div class="card">
-					<h3>{s.name}</h3>
-					<p>{s.text}</p>
+		<div class="stack">
+			<div class="stack-stage">
+				<p class="eyebrow">What we pour</p>
+				<h2>Services</h2>
+				<div class="cards">
+					{services.map((s) => (
+						<div class="card">
+							<h3>{s.name}</h3>
+							<p>{s.text}</p>
+						</div>
+					))}
 				</div>
-			))}
+			</div>
 		</div>
 	</section>
 
@@ -172,6 +176,58 @@ const galleryFull = await Promise.all(
 		window.scrollTo({ top: 0 }); // smooth via html { scroll-behavior: smooth }
 		navLogo.blur();
 	});
+
+	// Services stacking cards (phones only). The heading + cards sit in a
+	// "stage" that sticks under the nav while the outer .stack scrolls past.
+	// Each card is moved up in step with the scroll until it lands on the
+	// stack; once the last one lands the stage unsticks and everything leaves
+	// together.
+	const stackMq = window.matchMedia("(max-width: 599px)");
+	const stack = document.querySelector<HTMLElement>("#services .stack");
+	const stage = stack?.querySelector<HTMLElement>(".stack-stage");
+	const cardsEl = stack?.querySelector<HTMLElement>(".cards");
+	const cards = [...(cardsEl?.querySelectorAll<HTMLElement>(".card") ?? [])];
+	const PEEK_REM = 0.75; // how much of each card shows under the next one
+	let natural: number[] = [];
+	let peek = 0;
+	let pEnd = 0;
+	let stackActive = false;
+
+	const positionCards = () => {
+		if (!stackActive || !stack || !stage) return;
+		const stickTop = parseFloat(getComputedStyle(stage).top) || 0;
+		const p = Math.min(Math.max(stickTop - stack.getBoundingClientRect().top, 0), pEnd);
+		cards.forEach((card, k) => {
+			const shift = Math.min(p, natural[k] - k * peek);
+			card.style.transform = shift > 0 ? `translateY(${-shift}px)` : "";
+		});
+	};
+
+	const measureStack = () => {
+		if (!stack || !stage || !cardsEl || !cards.length) return;
+		// reset to the plain list layout before measuring
+		cards.forEach((c) => (c.style.transform = ""));
+		cardsEl.style.height = "";
+		stack.style.height = "";
+		stackActive = stackMq.matches;
+		if (!stackActive) return;
+
+		peek = PEEK_REM * parseFloat(getComputedStyle(document.documentElement).fontSize);
+		natural = cards.map((c) => c.offsetTop - cards[0].offsetTop);
+		const stackedH = Math.max(...cards.map((c, k) => k * peek + c.offsetHeight));
+		pEnd = natural[natural.length - 1] - (cards.length - 1) * peek;
+		// the stage only needs to be as tall as the finished stack...
+		cardsEl.style.height = `${stackedH}px`;
+		// ...and the outer track adds the scroll distance it takes to stack them
+		stack.style.height = `${stage.offsetHeight + pEnd}px`;
+		positionCards();
+	};
+
+	measureStack();
+	document.fonts?.ready.then(measureStack);
+	window.addEventListener("scroll", positionCards, { passive: true });
+	window.addEventListener("resize", measureStack);
+	stackMq.addEventListener("change", measureStack);
 
 	// Gallery lightbox
 	const links = [...document.querySelectorAll<HTMLAnchorElement>(".lightbox-link")];

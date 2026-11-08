@@ -185,6 +185,20 @@ const { title, description } = Astro.props;
 		letter-spacing: 0.2em;
 		color: var(--accent);
 	}
+	/* phones: the heading + cards pin under the nav while the cards stack up
+	   on top of each other (driven by the script in index.astro), then the
+	   whole stack scrolls away together. */
+	@media (max-width: 599px) {
+		#services .stack-stage {
+			position: sticky;
+			top: 4rem; /* just below the nav */
+		}
+		#services .card {
+			background: #2a2724; /* opaque so the cards underneath don't show through */
+			box-shadow: 0 -6px 24px rgba(0, 0, 0, 0.35);
+			will-change: transform;
+		}
+	}
 	.photo {
 		aspect-ratio: 4 / 5;
 		margin: 0;
