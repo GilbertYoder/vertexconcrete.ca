@@ -37,6 +37,11 @@ const base = import.meta.env.BASE_URL.replace(/\/?$/, "/");
 	* {
 		box-sizing: border-box;
 	}
+	/* <Picture> wraps each <img> in a <picture> (AVIF with a WebP fallback);
+	   take the wrapper out of layout so the <img> styles behave as before */
+	picture {
+		display: contents;
+	}
 	html {
 		scroll-behavior: smooth;
 	}
@@ -115,7 +120,7 @@ const base = import.meta.env.BASE_URL.replace(/\/?$/, "/");
 			/* Kept in its own, more specific rule on purpose: the CSS minifier
 			   otherwise folds the timeline into the `animation` shorthand above,
 			   which browsers reject, and the parallax silently stops working. */
-			#home > .hero-bg {
+			#home .hero-bg {
 				animation-timeline: scroll(root);
 			}
 		}

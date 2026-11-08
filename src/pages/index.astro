@@ -2,7 +2,7 @@
 import Layout from "../layouts/Layout.astro";
 import Carousel from "../components/Carousel.astro";
 import Services from "../components/Services.astro";
-import { Image, getImage } from "astro:assets";
+import { Picture, getImage } from "astro:assets";
 import logo from "../assets/logo-light.png";
 import heroImg from "../assets/pics/20240903_201112000_iOS.jpg";
 import aboutImg from "../assets/pics/20250724_154732000_iOS.jpg";
@@ -47,7 +47,7 @@ const galleryFull = await Promise.all(
 			<a href="#about">About</a>
 		</div>
 		<a href="#home" class="nav-logo" aria-label="Back to top" inert>
-			<Image src={logo} alt="" width={40} densities={[1, 2]} loading="eager" />
+			<Picture formats={["avif"]} fallbackFormat="webp" src={logo} alt="" width={40} densities={[1, 2]} loading="eager" />
 		</a>
 		<div class="nav-side nav-right">
 			<a href="#gallery">Gallery</a>
@@ -56,7 +56,9 @@ const galleryFull = await Promise.all(
 	</nav>
 
 	<section id="home">
-		<Image
+		<Picture
+			formats={["avif"]}
+			fallbackFormat="webp"
 			src={heroImg}
 			alt=""
 			class="hero-bg"
@@ -66,7 +68,7 @@ const galleryFull = await Promise.all(
 			loading="eager"
 			fetchpriority="high"
 		/>
-		<Image src={logo} alt="Vertex Concrete logo" class="hero-logo" width={200} densities={[1, 2]} loading="eager" />
+		<Picture formats={["avif"]} fallbackFormat="webp" src={logo} alt="Vertex Concrete logo" class="hero-logo" width={200} densities={[1, 2]} loading="eager" />
 		<p class="eyebrow">Concrete contractors</p>
 		<h1>Vertex Concrete</h1>
 		<p>Quality concrete work, built to last.</p>
@@ -79,7 +81,9 @@ const galleryFull = await Promise.all(
 		<p class="eyebrow">Who we are</p>
 		<h2>About</h2>
 		<p>Placeholder: tell the story of the business, the team, years of experience, and service area.</p>
-		<Image
+		<Picture
+			formats={["avif"]}
+			fallbackFormat="webp"
 			src={aboutImg}
 			alt="Concrete pump truck placing a large slab on a job site"
 			class="about-img"
@@ -102,7 +106,7 @@ const galleryFull = await Promise.all(
 						data-pswp-height={galleryFull[i].height}
 						aria-label={`View larger: ${g.alt}`}
 					>
-						<Image src={g.src} alt={g.alt} width={800} widths={[400, 800]} sizes="(min-width: 600px) 330px, 80vw" />
+						<Picture formats={["avif"]} fallbackFormat="webp" src={g.src} alt={g.alt} width={800} widths={[400, 800]} sizes="(min-width: 600px) 330px, 80vw" />
 					</a>
 					<figcaption>{g.title}</figcaption>
 				</figure>
