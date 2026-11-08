@@ -175,6 +175,35 @@ const galleryFull = await Promise.all(
 	window.addEventListener("scroll", update, { passive: true });
 	window.addEventListener("resize", update, { passive: true });
 
+	// Hero parallax: the background photo drifts down at a fraction of the
+	// scroll speed, so it moves slower than the page. Only runs while the hero
+	// is on screen, and not for visitors who prefer reduced motion.
+	const PARALLAX = 0.3;
+	const heroBg = hero?.querySelector<HTMLElement>(".hero-bg");
+	const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)");
+	let parallaxQueued = false;
+	const parallax = () => {
+		parallaxQueued = false;
+		if (!hero || !heroBg) return;
+		if (reduceMotion.matches) {
+			heroBg.style.transform = "";
+			return;
+		}
+		const y = Math.min(window.scrollY, hero.offsetHeight);
+		heroBg.style.transform = `translate3d(0, ${y * PARALLAX}px, 0)`;
+	};
+	parallax();
+	window.addEventListener(
+		"scroll",
+		() => {
+			if (!parallaxQueued) {
+				parallaxQueued = true;
+				requestAnimationFrame(parallax);
+			}
+		},
+		{ passive: true },
+	);
+
 	navLogo?.addEventListener("click", (e) => {
 		e.preventDefault();
 		window.scrollTo({ top: 0 }); // smooth via html { scroll-behavior: smooth }
