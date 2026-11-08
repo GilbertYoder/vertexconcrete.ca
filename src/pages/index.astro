@@ -165,162 +165,21 @@ const galleryFull = await Promise.all(
 </Layout>
 
 <script>
-	const nav = document.querySelector("nav");
-	const hero = document.querySelector<HTMLElement>("#home");
-	const navLogo = document.querySelector<HTMLAnchorElement>(".nav-logo");
-	const update = () => {
-		if (!nav) return;
-		nav.classList.toggle("scrolled", window.scrollY > 10);
-		// Show the logo once the hero has scrolled up behind the nav.
-		const pastHero = !!hero && hero.getBoundingClientRect().bottom <= nav.offsetHeight;
-		nav.classList.toggle("show-logo", pastHero);
-		if (navLogo) navLogo.inert = !pastHero;
-	};
-	update();
-	window.addEventListener("scroll", update, { passive: true });
-	window.addEventListener("resize", update, { passive: true });
+	import { initNav } from "../scripts/nav";
+	import { initParallax } from "../scripts/parallax";
+	import { initServicesStack } from "../scripts/services-stack";
+	import { initReveal } from "../scripts/reveal";
 
-	// Hero parallax: the background photo drifts down at a fraction of the
-	// scroll speed, so it moves slower than the page. Only runs while the hero
-	// is on screen, and not for visitors who prefer reduced motion.
-	const PARALLAX = 0.3;
-	const heroBg = hero?.querySelector<HTMLElement>(".hero-bg");
-	const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)");
-	let parallaxQueued = false;
-	const parallax = () => {
-		parallaxQueued = false;
-		if (!hero || !heroBg) return;
-		if (reduceMotion.matches) {
-			heroBg.style.transform = "";
-			return;
-		}
-		const y = Math.min(window.scrollY, hero.offsetHeight);
-		heroBg.style.transform = `translate3d(0, ${y * PARALLAX}px, 0)`;
-	};
-	parallax();
-	window.addEventListener(
-		"scroll",
-		() => {
-			if (!parallaxQueued) {
-				parallaxQueued = true;
-				requestAnimationFrame(parallax);
-			}
-		},
-		{ passive: true },
-	);
-
-	navLogo?.addEventListener("click", (e) => {
-		e.preventDefault();
-		window.scrollTo({ top: 0 }); // smooth via html { scroll-behavior: smooth }
-		navLogo.blur();
-	});
-
-	// Services stacking cards (phones only). The heading + cards sit in a
-	// "stage" that sticks under the nav while the outer .stack scrolls past.
-	// Each card is moved up in step with the scroll until it lands on the
-	// stack; once the last one lands the stage unsticks and everything leaves
-	// together.
-	const stackMq = window.matchMedia("(max-width: 599px)");
-	const stack = document.querySelector<HTMLElement>("#services .stack");
-	const stage = stack?.querySelector<HTMLElement>(".stack-stage");
-	const cardsEl = stack?.querySelector<HTMLElement>(".cards");
-	const cards = [...(cardsEl?.querySelectorAll<HTMLElement>(".card") ?? [])];
-	const PEEK_REM = 0.75; // how much of each card shows under the next one
-	let natural: number[] = [];
-	let peek = 0;
-	let pEnd = 0;
-	let stackActive = false;
-
-	const positionCards = () => {
-		if (!stackActive || !stack || !stage) return;
-		const stickTop = parseFloat(getComputedStyle(stage).top) || 0;
-		const p = Math.min(Math.max(stickTop - stack.getBoundingClientRect().top, 0), pEnd);
-		cards.forEach((card, k) => {
-			const shift = Math.min(p, natural[k] - k * peek);
-			card.style.transform = shift > 0 ? `translateY(${-shift}px)` : "";
-		});
-	};
-
-	const measureStack = () => {
-		if (!stack || !stage || !cardsEl || !cards.length) return;
-		// reset to the plain list layout before measuring
-		cards.forEach((c) => (c.style.transform = ""));
-		cardsEl.style.height = "";
-		stack.style.height = "";
-		stackActive = stackMq.matches;
-		if (!stackActive) return;
-
-		peek = PEEK_REM * parseFloat(getComputedStyle(document.documentElement).fontSize);
-		natural = cards.map((c) => c.offsetTop - cards[0].offsetTop);
-		const stackedH = Math.max(...cards.map((c, k) => k * peek + c.offsetHeight));
-		pEnd = natural[natural.length - 1] - (cards.length - 1) * peek;
-		// the stage only needs to be as tall as the finished stack...
-		cardsEl.style.height = `${stackedH}px`;
-		// ...and the outer track adds the scroll distance it takes to stack them
-		stack.style.height = `${stage.offsetHeight + pEnd}px`;
-		positionCards();
-	};
-
-	measureStack();
-	document.fonts?.ready.then(measureStack);
-	window.addEventListener("scroll", positionCards, { passive: true });
-	window.addEventListener("resize", measureStack);
-	stackMq.addEventListener("change", measureStack);
-
-	// Scroll reveals: major pieces fade and slide up as they come into view.
-	// Things that enter together are staggered slightly. The class is added
-	// here (not in the HTML) so nothing stays hidden if JS doesn't run.
-	const revealTargets = document.querySelectorAll<HTMLElement>(
-		[
-			"section:not(#home) > .eyebrow",
-			"section:not(#home) > h2",
-			"#services .stack-stage > .eyebrow",
-			"#services .stack-stage > h2",
-			"#services .card",
-			"#about > p:not(.eyebrow)",
-			".about-img",
-			"#gallery .carousel-wrap", // whole strip, so off-screen photos aren't left hidden
-			"#contact > .card",
-			"#contact > form",
-		].join(", "),
-	);
-	if ("IntersectionObserver" in window && !reduceMotion.matches) {
-		const revealObserver = new IntersectionObserver(
-			(entries) => {
-				let n = 0;
-				for (const entry of entries) {
-					if (!entry.isIntersecting) continue;
-					const el = entry.target as HTMLElement;
-					el.style.transitionDelay = `${Math.min(n++, 5) * 90}ms`;
-					el.classList.add("visible");
-					// drop the delay afterwards so it doesn't slow later transitions
-					el.addEventListener("transitionend", () => (el.style.transitionDelay = ""), { once: true });
-					revealObserver.unobserve(el);
-				}
-			},
-			{ rootMargin: "0px 0px -10% 0px", threshold: 0.15 },
-		);
-		revealTargets.forEach((el) => {
-			el.classList.add("reveal");
-			revealObserver.observe(el);
-		});
-	}
+	initNav();
+	initParallax();
+	initServicesStack();
+	initReveal();
 </script>
 
 <!-- Kept in its own script so that if PhotoSwipe ever fails to load, only the
      lightbox is affected and the rest of the page's effects keep working. -->
 <script>
-	import PhotoSwipeLightbox from "photoswipe/lightbox";
-	import "photoswipe/style.css";
+	import { initLightbox } from "../scripts/lightbox";
 
-	// Gallery lightbox (PhotoSwipe): swipe, pinch-zoom, swipe down to close.
-	// The viewer code is only downloaded when a photo is first opened.
-	const lightbox = new PhotoSwipeLightbox({
-		gallery: "#gallery .carousel",
-		children: "a.lightbox-link",
-		pswpModule: () => import("photoswipe"),
-		bgOpacity: 0.92,
-		wheelToZoom: true,
-	});
-	lightbox.init();
+	initLightbox();
 </script>
