@@ -1,7 +1,7 @@
 ---
 import Layout from "../layouts/Layout.astro";
 import Carousel from "../components/Carousel.astro";
-import { Image } from "astro:assets";
+import { Image, getImage } from "astro:assets";
 import logo from "../assets/logo-light.png";
 import heroImg from "../assets/pics/20240903_201112000_iOS.jpg";
 import aboutImg from "../assets/pics/20250724_154732000_iOS.jpg";
@@ -35,6 +35,11 @@ const gallery = [
 	{ src: g3, alt: "Formed footings with rebar on a hillside site" },
 	{ src: g2, alt: "Fresh concrete placed along a foundation wall" },
 ];
+
+// Larger versions shown in the lightbox when a gallery photo is clicked.
+const galleryFull = await Promise.all(
+	gallery.map((g) => getImage({ src: g.src, width: 2048, format: "webp" })),
+);
 ---
 <Layout title="Vertex Concrete" description="Vertex Concrete – quality concrete work for residential and commercial projects.">
 	<nav>
@@ -94,13 +99,23 @@ const gallery = [
 		<p class="eyebrow">Recent work</p>
 		<h2>Gallery</h2>
 		<Carousel label="Gallery">
-			{gallery.map((g) => (
+			{gallery.map((g, i) => (
 				<figure class="photo">
-					<Image src={g.src} alt={g.alt} width={800} widths={[400, 800]} sizes="(min-width: 600px) 330px, 80vw" />
+					<a href={galleryFull[i].src} class="lightbox-link" data-index={i} aria-label={`View larger: ${g.alt}`}>
+						<Image src={g.src} alt={g.alt} width={800} widths={[400, 800]} sizes="(min-width: 600px) 330px, 80vw" />
+					</a>
 				</figure>
 			))}
 		</Carousel>
 	</section>
+
+	<dialog class="lightbox" aria-label="Photo viewer">
+		<img class="lightbox-img" alt="" />
+		<button type="button" class="lightbox-btn lightbox-close" aria-label="Close">&times;</button>
+		<button type="button" class="lightbox-btn lightbox-prev" aria-label="Previous photo">&#8249;</button>
+		<button type="button" class="lightbox-btn lightbox-next" aria-label="Next photo">&#8250;</button>
+		<p class="lightbox-count" aria-live="polite"></p>
+	</dialog>
 
 	<section id="contact">
 		<p class="eyebrow">Say hello</p>
@@ -138,4 +153,49 @@ const gallery = [
 	const update = () => nav?.classList.toggle("scrolled", window.scrollY > 10);
 	update();
 	window.addEventListener("scroll", update, { passive: true });
+
+	// Gallery lightbox
+	const links = [...document.querySelectorAll<HTMLAnchorElement>(".lightbox-link")];
+	const dialog = document.querySelector<HTMLDialogElement>(".lightbox");
+	const img = dialog?.querySelector<HTMLImageElement>(".lightbox-img");
+	const count = dialog?.querySelector<HTMLElement>(".lightbox-count");
+	let current = 0;
+
+	const show = (i: number) => {
+		if (!img || !count) return;
+		current = (i + links.length) % links.length;
+		const link = links[current];
+		img.src = link.href;
+		img.alt = link.querySelector("img")?.alt ?? "";
+		count.textContent = `${current + 1} / ${links.length}`;
+	};
+
+	if (dialog && img) {
+		links.forEach((link, i) =>
+			link.addEventListener("click", (e) => {
+				e.preventDefault();
+				show(i);
+				dialog.showModal();
+			}),
+		);
+		dialog.querySelector(".lightbox-close")?.addEventListener("click", () => dialog.close());
+		dialog.querySelector(".lightbox-prev")?.addEventListener("click", () => show(current - 1));
+		dialog.querySelector(".lightbox-next")?.addEventListener("click", () => show(current + 1));
+		// Click on the dark area around the photo closes it.
+		dialog.addEventListener("click", (e) => {
+			if (e.target === dialog) dialog.close();
+		});
+		dialog.addEventListener("keydown", (e) => {
+			if (e.key === "ArrowLeft") show(current - 1);
+			if (e.key === "ArrowRight") show(current + 1);
+		});
+		// Swipe left/right on touch screens.
+		let startX = 0;
+		dialog.addEventListener("touchstart", (e) => (startX = e.touches[0].clientX), { passive: true });
+		dialog.addEventListener("touchend", (e) => {
+			const dx = e.changedTouches[0].clientX - startX;
+			if (Math.abs(dx) > 50) show(current + (dx < 0 ? 1 : -1));
+		});
+		dialog.addEventListener("close", () => img.removeAttribute("src"));
+	}
 </script>
