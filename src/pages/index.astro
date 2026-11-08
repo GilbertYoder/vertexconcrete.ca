@@ -37,8 +37,14 @@ const gallery = [
 ];
 
 // Larger versions shown in the lightbox when a gallery photo is clicked.
+const FULL_W = 2048;
 const galleryFull = await Promise.all(
-	gallery.map((g) => getImage({ src: g.src, width: 2048, format: "webp" })),
+	gallery.map(async (g) => {
+		const img = await getImage({ src: g.src, width: FULL_W, format: "webp" });
+		// PhotoSwipe needs the large image's size up front
+		const width = Math.min(FULL_W, g.src.width);
+		return { src: img.src, width, height: Math.round((width * g.src.height) / g.src.width) };
+	}),
 );
 ---
 <Layout title="Vertex Concrete" description="Vertex Concrete – quality concrete work for residential and commercial projects.">
@@ -112,7 +118,13 @@ const galleryFull = await Promise.all(
 		<Carousel label="Gallery">
 			{gallery.map((g, i) => (
 				<figure class="photo">
-					<a href={galleryFull[i].src} class="lightbox-link" data-index={i} aria-label={`View larger: ${g.alt}`}>
+					<a
+						href={galleryFull[i].src}
+						class="lightbox-link"
+						data-pswp-width={galleryFull[i].width}
+						data-pswp-height={galleryFull[i].height}
+						aria-label={`View larger: ${g.alt}`}
+					>
 						<Image src={g.src} alt={g.alt} width={800} widths={[400, 800]} sizes="(min-width: 600px) 330px, 80vw" />
 					</a>
 					<figcaption>{g.title}</figcaption>
@@ -120,14 +132,6 @@ const galleryFull = await Promise.all(
 			))}
 		</Carousel>
 	</section>
-
-	<dialog class="lightbox" aria-label="Photo viewer">
-		<img class="lightbox-img" alt="" />
-		<button type="button" class="lightbox-btn lightbox-close" aria-label="Close">&times;</button>
-		<button type="button" class="lightbox-btn lightbox-prev" aria-label="Previous photo">&#8249;</button>
-		<button type="button" class="lightbox-btn lightbox-next" aria-label="Next photo">&#8250;</button>
-		<p class="lightbox-count" aria-live="polite"></p>
-	</dialog>
 
 	<section id="contact">
 		<p class="eyebrow">Say hello</p>
@@ -161,6 +165,9 @@ const galleryFull = await Promise.all(
 </Layout>
 
 <script>
+	import PhotoSwipeLightbox from "photoswipe/lightbox";
+	import "photoswipe/style.css";
+
 	const nav = document.querySelector("nav");
 	const hero = document.querySelector<HTMLElement>("#home");
 	const navLogo = document.querySelector<HTMLAnchorElement>(".nav-logo");
@@ -302,48 +309,14 @@ const galleryFull = await Promise.all(
 		});
 	}
 
-	// Gallery lightbox
-	const links = [...document.querySelectorAll<HTMLAnchorElement>(".lightbox-link")];
-	const dialog = document.querySelector<HTMLDialogElement>(".lightbox");
-	const img = dialog?.querySelector<HTMLImageElement>(".lightbox-img");
-	const count = dialog?.querySelector<HTMLElement>(".lightbox-count");
-	let current = 0;
-
-	const show = (i: number) => {
-		if (!img || !count) return;
-		current = (i + links.length) % links.length;
-		const link = links[current];
-		img.src = link.href;
-		img.alt = link.querySelector("img")?.alt ?? "";
-		count.textContent = `${current + 1} / ${links.length}`;
-	};
-
-	if (dialog && img) {
-		links.forEach((link, i) =>
-			link.addEventListener("click", (e) => {
-				e.preventDefault();
-				show(i);
-				dialog.showModal();
-			}),
-		);
-		dialog.querySelector(".lightbox-close")?.addEventListener("click", () => dialog.close());
-		dialog.querySelector(".lightbox-prev")?.addEventListener("click", () => show(current - 1));
-		dialog.querySelector(".lightbox-next")?.addEventListener("click", () => show(current + 1));
-		// Click on the dark area around the photo closes it.
-		dialog.addEventListener("click", (e) => {
-			if (e.target === dialog) dialog.close();
-		});
-		dialog.addEventListener("keydown", (e) => {
-			if (e.key === "ArrowLeft") show(current - 1);
-			if (e.key === "ArrowRight") show(current + 1);
-		});
-		// Swipe left/right on touch screens.
-		let startX = 0;
-		dialog.addEventListener("touchstart", (e) => (startX = e.touches[0].clientX), { passive: true });
-		dialog.addEventListener("touchend", (e) => {
-			const dx = e.changedTouches[0].clientX - startX;
-			if (Math.abs(dx) > 50) show(current + (dx < 0 ? 1 : -1));
-		});
-		dialog.addEventListener("close", () => img.removeAttribute("src"));
-	}
+	// Gallery lightbox (PhotoSwipe): swipe, pinch-zoom, swipe down to close.
+	// The viewer code is only downloaded when a photo is first opened.
+	const lightbox = new PhotoSwipeLightbox({
+		gallery: "#gallery .carousel",
+		children: "a.lightbox-link",
+		pswpModule: () => import("photoswipe"),
+		bgOpacity: 0.92,
+		wheelToZoom: true,
+	});
+	lightbox.init();
 </script>
