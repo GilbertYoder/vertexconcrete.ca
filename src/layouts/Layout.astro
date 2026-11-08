@@ -108,8 +108,13 @@ const { title, description } = Astro.props;
 		@supports (animation-timeline: scroll()) {
 			.hero-bg {
 				animation: hero-parallax linear both;
-				animation-timeline: scroll(root);
 				animation-range: 0 100svh;
+			}
+			/* Kept in its own, more specific rule on purpose: the CSS minifier
+			   otherwise folds the timeline into the `animation` shorthand above,
+			   which browsers reject, and the parallax silently stops working. */
+			#home > .hero-bg {
+				animation-timeline: scroll(root);
 			}
 		}
 	}
