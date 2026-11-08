@@ -18,21 +18,28 @@ const { label } = Astro.props;
 
 <style>
 	@property --fade-l {
-		syntax: "<length>";
+		syntax: "<length-percentage>";
 		inherits: false;
 		initial-value: 0px;
 	}
 	@property --fade-r {
-		syntax: "<length>";
+		syntax: "<length-percentage>";
 		inherits: false;
 		initial-value: 0px;
 	}
 	.carousel-wrap {
 		position: relative;
 	}
+	/* The current slide snaps to the centre with a sliver of its neighbours
+	   showing either side. --side is the width of that sliver area, and the
+	   edge fades are exactly that wide, so they only ever cover the
+	   neighbours, never the slide you're looking at. */
 	.carousel {
+		--slide: 80%;
+		--gap: 1rem;
+		--side: calc((100% - var(--slide)) / 2);
 		display: flex;
-		gap: 1rem;
+		gap: var(--gap);
 		overflow-x: auto;
 		overflow-y: hidden; /* never scroll vertically, so page scrolling isn't caught here */
 		scroll-snap-type: x mandatory;
@@ -49,19 +56,26 @@ const { label } = Astro.props;
 			--fade-r 0.3s;
 	}
 	.can-left .carousel {
-		--fade-l: 3rem;
+		--fade-l: var(--side);
 	}
 	.can-right .carousel {
-		--fade-r: 3rem;
+		--fade-r: var(--side);
 	}
 	.carousel > :global(*) {
-		flex: 0 0 80%;
-		scroll-snap-align: start;
+		flex: 0 0 var(--slide);
+		scroll-snap-align: center;
 		margin: 0;
 	}
+	/* spacers at both ends so the first and last slides can centre too
+	   (spacer + the flex gap = --side) */
+	.carousel::before,
+	.carousel::after {
+		content: "";
+		flex: 0 0 calc(var(--side) - var(--gap));
+	}
 	@media (min-width: 600px) {
-		.carousel > :global(*) {
-			flex-basis: 45%;
+		.carousel {
+			--slide: 45%;
 		}
 	}
 
