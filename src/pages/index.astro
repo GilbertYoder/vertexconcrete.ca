@@ -25,15 +25,15 @@ const services = [
 ];
 
 const gallery = [
-	{ src: g0, alt: "Curved concrete patio behind a new home with mountain views" },
-	{ src: g10, alt: "Concrete apron in front of a steel shop building" },
-	{ src: g6, alt: "Concrete walkways connecting cabins at dusk" },
-	{ src: g9, alt: "Concrete entry steps at a modern front door" },
-	{ src: g7, alt: "Cast-in-place concrete steps beside a home" },
-	{ src: g8, alt: "Concrete front steps leading up to a new home" },
-	{ src: g5, alt: "Pump truck pouring foundation walls among fall larches" },
-	{ src: g3, alt: "Formed footings with rebar on a hillside site" },
-	{ src: g2, alt: "Fresh concrete placed along a foundation wall" },
+	{ src: g0, title: "Backyard Patio", alt: "Curved concrete patio behind a new home with mountain views" },
+	{ src: g10, title: "Shop Apron", alt: "Concrete apron in front of a steel shop building" },
+	{ src: g6, title: "Cabin Walkways", alt: "Concrete walkways connecting cabins at dusk" },
+	{ src: g9, title: "Entry Steps", alt: "Concrete entry steps at a modern front door" },
+	{ src: g7, title: "Cast-in-Place Steps", alt: "Cast-in-place concrete steps beside a home" },
+	{ src: g8, title: "Front Steps", alt: "Concrete front steps leading up to a new home" },
+	{ src: g5, title: "Foundation Pour", alt: "Pump truck pouring foundation walls among fall larches" },
+	{ src: g3, title: "Footings", alt: "Formed footings with rebar on a hillside site" },
+	{ src: g2, title: "Foundation Walls", alt: "Fresh concrete placed along a foundation wall" },
 ];
 
 // Larger versions shown in the lightbox when a gallery photo is clicked.
@@ -115,6 +115,7 @@ const galleryFull = await Promise.all(
 					<a href={galleryFull[i].src} class="lightbox-link" data-index={i} aria-label={`View larger: ${g.alt}`}>
 						<Image src={g.src} alt={g.alt} width={800} widths={[400, 800]} sizes="(min-width: 600px) 330px, 80vw" />
 					</a>
+					<figcaption>{g.title}</figcaption>
 				</figure>
 			))}
 		</Carousel>

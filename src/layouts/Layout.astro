@@ -201,6 +201,7 @@ const { title, description } = Astro.props;
 		}
 	}
 	.photo {
+		position: relative;
 		aspect-ratio: 4 / 5;
 		margin: 0;
 		overflow: hidden;
@@ -219,8 +220,53 @@ const { title, description } = Astro.props;
 		object-fit: cover;
 		transition: transform 0.4s;
 	}
-	.photo a:hover img {
-		transform: scale(1.03);
+	/* dark gradient + project name along the bottom of each photo */
+	.photo::after {
+		content: "";
+		position: absolute;
+		inset: 50% 0 0;
+		background: linear-gradient(to bottom, transparent, rgba(21, 19, 17, 0.85));
+		pointer-events: none;
+		transition: opacity 0.4s;
+	}
+	.photo figcaption {
+		position: absolute;
+		left: 1.25rem;
+		right: 1.25rem;
+		bottom: 1rem;
+		z-index: 1;
+		font-family: "Barlow Condensed", "Arial Narrow", sans-serif;
+		font-size: 1.4rem;
+		font-weight: 600;
+		letter-spacing: 0.04em;
+		text-transform: uppercase;
+		line-height: 1.1;
+		pointer-events: none; /* clicks go through to the photo link */
+		transition:
+			opacity 0.4s,
+			transform 0.4s;
+	}
+	.photo a:hover img,
+	.photo a:focus-visible img {
+		transform: scale(1.04);
+	}
+	/* with a mouse, the gradient and name only appear on hover; on touch
+	   screens there's no hover, so they stay visible */
+	@media (hover: hover) {
+		.photo::after,
+		.photo figcaption {
+			opacity: 0;
+		}
+		.photo figcaption {
+			transform: translateY(0.5rem);
+		}
+		.photo:hover::after,
+		.photo:hover figcaption,
+		.photo:focus-within::after,
+		.photo:focus-within figcaption {
+			opacity: 1;
+			transform: none;
+		}
 	}
 	.photo a:focus-visible {
 		outline: 2px solid var(--accent);
