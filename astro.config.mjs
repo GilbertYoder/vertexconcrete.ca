@@ -13,6 +13,8 @@ const allowedHosts = [
 
 // https://astro.build/config
 export default defineConfig({
+  site: 'https://GilbertYoder.github.io',
+  base: '/vertexconcrete.ca',
   vite: {
     server: { allowedHosts },
     preview: { allowedHosts },

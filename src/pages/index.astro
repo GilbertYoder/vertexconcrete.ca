@@ -1,6 +1,19 @@
 ---
 import Layout from "../layouts/Layout.astro";
 import Carousel from "../components/Carousel.astro";
+import { Image } from "astro:assets";
+import logo from "../assets/logo-light.png";
+import heroImg from "../assets/pics/20240903_201112000_iOS.jpg";
+import aboutImg from "../assets/pics/20250724_154732000_iOS.jpg";
+import g0 from "../assets/pics/20240609_023005000_iOS.jpg";
+import g2 from "../assets/pics/20241009_225823000_iOS.jpg";
+import g3 from "../assets/pics/20250611_152941334_iOS.jpg";
+import g5 from "../assets/pics/20251030_191415000_iOS.jpg";
+import g6 from "../assets/pics/20251110_144903973_iOS.jpg";
+import g7 from "../assets/pics/20260418_174724000_iOS.jpg";
+import g8 from "../assets/pics/20260501_002026300_iOS.jpg";
+import g9 from "../assets/pics/20260501_004410480_iOS.jpg";
+import g10 from "../assets/pics/20261015_220029890_iOS.jpg";
 
 const services = [
 	{ name: "Driveways", text: "Durable, clean-finished concrete driveways." },
@@ -10,10 +23,22 @@ const services = [
 	{ name: "Commercial", text: "Floors, sidewalks, and site concrete." },
 	{ name: "Repairs & Resurfacing", text: "Restore cracked or worn concrete." },
 ];
+
+const gallery = [
+	{ src: g0, alt: "Curved concrete patio behind a new home with mountain views" },
+	{ src: g10, alt: "Concrete apron in front of a steel shop building" },
+	{ src: g6, alt: "Concrete walkways connecting cabins at dusk" },
+	{ src: g9, alt: "Concrete entry steps at a modern front door" },
+	{ src: g7, alt: "Cast-in-place concrete steps beside a home" },
+	{ src: g8, alt: "Concrete front steps leading up to a new home" },
+	{ src: g5, alt: "Pump truck pouring foundation walls among fall larches" },
+	{ src: g3, alt: "Formed footings with rebar on a hillside site" },
+	{ src: g2, alt: "Fresh concrete placed along a foundation wall" },
+];
 ---
 <Layout title="Vertex Concrete" description="Vertex Concrete – quality concrete work for residential and commercial projects.">
 	<nav>
-		<a href="#home">Home</a>
+		<!-- <a href="#home">Home</a> -->
 		<a href="#services">Services</a>
 		<a href="#about">About</a>
 		<a href="#gallery">Gallery</a>
@@ -21,6 +46,17 @@ const services = [
 	</nav>
 
 	<section id="home">
+		<Image
+			src={heroImg}
+			alt=""
+			class="hero-bg"
+			width={2048}
+			widths={[640, 1024, 1600, 2048]}
+			sizes="100vw"
+			loading="eager"
+			fetchpriority="high"
+		/>
+		<Image src={logo} alt="Vertex Concrete logo" class="hero-logo" width={200} densities={[1, 2]} loading="eager" />
 		<p class="eyebrow">Concrete contractors</p>
 		<h1>Vertex Concrete</h1>
 		<p>Quality concrete work, built to last.</p>
@@ -44,14 +80,24 @@ const services = [
 		<p class="eyebrow">Who we are</p>
 		<h2>About</h2>
 		<p>Placeholder: tell the story of the business, the team, years of experience, and service area.</p>
+		<Image
+			src={aboutImg}
+			alt="Concrete pump truck placing a large slab on a job site"
+			class="about-img"
+			width={1440}
+			widths={[400, 800, 1440]}
+			sizes="(min-width: 760px) 720px, 100vw"
+		/>
 	</section>
 
 	<section id="gallery">
 		<p class="eyebrow">Recent work</p>
 		<h2>Gallery</h2>
 		<Carousel label="Gallery">
-			{[1, 2, 3, 4].map((n) => (
-				<div class="card photo">Project {n}</div>
+			{gallery.map((g) => (
+				<figure class="photo">
+					<Image src={g.src} alt={g.alt} width={800} widths={[400, 800]} sizes="(min-width: 600px) 330px, 80vw" />
+				</figure>
 			))}
 		</Carousel>
 	</section>
