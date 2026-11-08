@@ -1,6 +1,7 @@
 ---
 import Layout from "../layouts/Layout.astro";
 import Carousel from "../components/Carousel.astro";
+import Services from "../components/Services.astro";
 import { Image, getImage } from "astro:assets";
 import logo from "../assets/logo-light.png";
 import heroImg from "../assets/pics/20240903_201112000_iOS.jpg";
@@ -14,15 +15,6 @@ import g7 from "../assets/pics/20260418_174724000_iOS.jpg";
 import g8 from "../assets/pics/20260501_002026300_iOS.jpg";
 import g9 from "../assets/pics/20260501_004410480_iOS.jpg";
 import g10 from "../assets/pics/20261015_220029890_iOS.jpg";
-
-const services = [
-	{ name: "Driveways", text: "Durable, clean-finished concrete driveways." },
-	{ name: "Foundations", text: "Strong footings and foundation walls." },
-	{ name: "Patios & Walkways", text: "Plain, stamped, or exposed aggregate finishes." },
-	{ name: "Garage Slabs", text: "Level, reinforced slabs for garages and shops." },
-	{ name: "Commercial", text: "Floors, sidewalks, and site concrete." },
-	{ name: "Repairs & Resurfacing", text: "Restore cracked or worn concrete." },
-];
 
 const gallery = [
 	{ src: g0, title: "Backyard Patio", alt: "Curved concrete patio behind a new home with mountain views" },
@@ -81,22 +73,7 @@ const galleryFull = await Promise.all(
 		<a class="button" href="#contact">Get a Quote</a>
 	</section>
 
-	<section id="services">
-		<div class="stack">
-			<div class="stack-stage">
-				<p class="eyebrow">What we pour</p>
-				<h2>Services</h2>
-				<div class="cards">
-					{services.map((s) => (
-						<div class="card">
-							<h3>{s.name}</h3>
-							<p>{s.text}</p>
-						</div>
-					))}
-				</div>
-			</div>
-		</div>
-	</section>
+	<Services />
 
 	<section id="about">
 		<p class="eyebrow">Who we are</p>
@@ -167,12 +144,10 @@ const galleryFull = await Promise.all(
 <script>
 	import { initNav } from "../scripts/nav";
 	import { initParallax } from "../scripts/parallax";
-	import { initServicesStack } from "../scripts/services-stack";
 	import { initReveal } from "../scripts/reveal";
 
 	initNav();
 	initParallax();
-	initServicesStack();
 	initReveal();
 </script>
 

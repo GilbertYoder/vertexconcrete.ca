@@ -1,0 +1,139 @@
+---
+// The Services section. On phones the cards stack up on top of each other as
+// you scroll (see the script below); on wider screens they're a 2-column grid.
+const services = [
+	{ name: "Driveways", text: "Durable, clean-finished concrete driveways." },
+	{ name: "Foundations", text: "Strong footings and foundation walls." },
+	{ name: "Patios & Walkways", text: "Plain, stamped, or exposed aggregate finishes." },
+	{ name: "Garage Slabs", text: "Level, reinforced slabs for garages and shops." },
+	{ name: "Commercial", text: "Floors, sidewalks, and site concrete." },
+	{ name: "Repairs & Resurfacing", text: "Restore cracked or worn concrete." },
+];
+
+---
+<section id="services">
+	<div class="stack">
+		<div class="stack-stage">
+			<p class="eyebrow">What we pour</p>
+			<h2>Services</h2>
+			<div class="cards">
+				{services.map((s) => (
+					<div class="card">
+						<h3>{s.name}</h3>
+						<p>{s.text}</p>
+					</div>
+				))}
+			</div>
+		</div>
+	</div>
+</section>
+
+<style>
+	/* "01", "02"... above each service name */
+	#services .cards {
+		counter-reset: n;
+	}
+	#services .card h3::before {
+		counter-increment: n;
+		content: "0" counter(n);
+		display: block;
+		font-size: 0.8rem;
+		letter-spacing: 0.2em;
+		color: var(--accent);
+	}
+
+	/* phones: the heading + cards pin under the nav while the cards stack up
+	   on top of each other, then the whole stack scrolls away together */
+	@media (max-width: 599px) {
+		#services .stack-stage {
+			position: sticky;
+			top: 4rem; /* just below the nav */
+		}
+		#services .card {
+			background: #2a2724; /* opaque so the cards underneath don't show through */
+			box-shadow: 0 -6px 24px rgba(0, 0, 0, 0.35);
+			will-change: transform;
+		}
+		/* the stacking script moves the cards, so the scroll reveal only fades
+		   them; a transform transition would make them lag the scroll */
+		#services .card.reveal {
+			transform: none;
+			transition: opacity 700ms ease;
+		}
+	}
+
+	@media (min-width: 600px) {
+		#services .cards {
+			display: grid;
+			grid-template-columns: 1fr 1fr;
+			gap: 1rem;
+		}
+		#services .card {
+			margin: 0;
+		}
+	}
+</style>
+
+<script>
+	/** How much of each card shows under the next one. */
+	const PEEK_REM = 0.75;
+
+	/**
+	 * Services stacking cards (phones only). The heading + cards sit in a "stage"
+	 * that sticks under the nav while the outer .stack scrolls past. Each card is
+	 * moved up in step with the scroll until it lands on the stack; once the last
+	 * one lands the stage unsticks and everything leaves together.
+	 *
+	 * Depends on the CSS above making .stack-stage `position: sticky` on phones.
+	 */
+	function initServicesStack() {
+		const mq = window.matchMedia("(max-width: 599px)");
+		const stack = document.querySelector<HTMLElement>("#services .stack");
+		const stage = stack?.querySelector<HTMLElement>(".stack-stage");
+		const cardsEl = stack?.querySelector<HTMLElement>(".cards");
+		const cards = [...(cardsEl?.querySelectorAll<HTMLElement>(".card") ?? [])];
+		if (!stack || !stage || !cardsEl || !cards.length) return;
+
+		let natural: number[] = []; // each card's top in the plain list layout
+		let peek = 0;
+		let pEnd = 0; // scroll distance it takes to stack every card
+		let active = false;
+
+		const position = () => {
+			if (!active) return;
+			const stickTop = parseFloat(getComputedStyle(stage).top) || 0;
+			const p = Math.min(Math.max(stickTop - stack.getBoundingClientRect().top, 0), pEnd);
+			cards.forEach((card, k) => {
+				const shift = Math.min(p, natural[k] - k * peek);
+				card.style.transform = shift > 0 ? `translateY(${-shift}px)` : "";
+			});
+		};
+
+		const measure = () => {
+			// reset to the plain list layout before measuring
+			cards.forEach((c) => (c.style.transform = ""));
+			cardsEl.style.height = "";
+			stack.style.height = "";
+			active = mq.matches;
+			if (!active) return;
+
+			peek = PEEK_REM * parseFloat(getComputedStyle(document.documentElement).fontSize);
+			natural = cards.map((c) => c.offsetTop - cards[0].offsetTop);
+			const stackedH = Math.max(...cards.map((c, k) => k * peek + c.offsetHeight));
+			pEnd = natural[natural.length - 1] - (cards.length - 1) * peek;
+			// the stage only needs to be as tall as the finished stack...
+			cardsEl.style.height = `${stackedH}px`;
+			// ...and the outer track adds the scroll distance it takes to stack them
+			stack.style.height = `${stage.offsetHeight + pEnd}px`;
+			position();
+		};
+
+		measure();
+		document.fonts?.ready.then(measure);
+		window.addEventListener("scroll", position, { passive: true });
+		window.addEventListener("resize", measure);
+		mq.addEventListener("change", measure);
+	}
+
+	initServicesStack();
+</script>
