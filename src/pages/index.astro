@@ -165,9 +165,6 @@ const galleryFull = await Promise.all(
 </Layout>
 
 <script>
-	import PhotoSwipeLightbox from "photoswipe/lightbox";
-	import "photoswipe/style.css";
-
 	const nav = document.querySelector("nav");
 	const hero = document.querySelector<HTMLElement>("#home");
 	const navLogo = document.querySelector<HTMLAnchorElement>(".nav-logo");
@@ -308,6 +305,13 @@ const galleryFull = await Promise.all(
 			revealObserver.observe(el);
 		});
 	}
+</script>
+
+<!-- Kept in its own script so that if PhotoSwipe ever fails to load, only the
+     lightbox is affected and the rest of the page's effects keep working. -->
+<script>
+	import PhotoSwipeLightbox from "photoswipe/lightbox";
+	import "photoswipe/style.css";
 
 	// Gallery lightbox (PhotoSwipe): swipe, pinch-zoom, swipe down to close.
 	// The viewer code is only downloaded when a photo is first opened.
