@@ -285,12 +285,6 @@ const { title, description } = Astro.props;
 		opacity: 1;
 		transform: none;
 	}
-	/* gallery photos sit in a scroll strip that would clip a slide-up, so
-	   they only fade */
-	.photo.reveal {
-		transform: none;
-		transition: opacity 700ms ease;
-	}
 	@media (max-width: 599px) {
 		/* on phones the stacking script moves the service cards, so they only
 		   fade in; a transform transition would make them lag the scroll */

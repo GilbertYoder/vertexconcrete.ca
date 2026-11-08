@@ -173,6 +173,19 @@ const { label } = Astro.props;
 		wrap.querySelector(".carousel-btn.prev")?.addEventListener("click", () => step(-1));
 		wrap.querySelector(".carousel-btn.next")?.addEventListener("click", () => step(1));
 
+		// Images in a sideways strip only lazy-load once they're scrolled
+		// into it, so the next photo would be blank until you swipe to it.
+		// Start loading them all once the strip is about a screen away.
+		const preload = new IntersectionObserver(
+			(entries) => {
+				if (!entries.some((e) => e.isIntersecting)) return;
+				preload.disconnect();
+				strip.querySelectorAll<HTMLImageElement>('img[loading="lazy"]').forEach((img) => (img.loading = "eager"));
+			},
+			{ rootMargin: "100% 0px" },
+		);
+		preload.observe(strip);
+
 		// nudge once the first time most of the strip is on screen
 		const io = new IntersectionObserver(
 			(entries) => {

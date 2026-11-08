@@ -279,7 +279,7 @@ const galleryFull = await Promise.all(
 			"#services .card",
 			"#about > p:not(.eyebrow)",
 			".about-img",
-			".photo",
+			"#gallery .carousel-wrap", // whole strip, so off-screen photos aren't left hidden
 			"#contact > .card",
 			"#contact > form",
 		].join(", "),
