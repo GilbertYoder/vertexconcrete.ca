@@ -99,7 +99,24 @@ const { title, description } = Astro.props;
 		height: 100%;
 		object-fit: cover;
 		z-index: -2;
-		will-change: transform; /* moved by the parallax script */
+	}
+	/* parallax: as the first screen of the page scrolls by, the photo drifts
+	   down 30% of that distance, so it moves slower than the page. Done with a
+	   native scroll-driven animation (runs off the main thread, no JS); browsers
+	   without support (currently Firefox) just get a still photo. */
+	@media (prefers-reduced-motion: no-preference) {
+		@supports (animation-timeline: scroll()) {
+			.hero-bg {
+				animation: hero-parallax linear both;
+				animation-timeline: scroll(root);
+				animation-range: 0 100svh;
+			}
+		}
+	}
+	@keyframes hero-parallax {
+		to {
+			transform: translateY(30svh);
+		}
 	}
 	#home::before {
 		content: "";
