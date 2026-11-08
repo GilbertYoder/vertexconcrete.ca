@@ -75,6 +75,8 @@ const services = [
 </style>
 
 <script>
+	import { onScroll } from "../scripts/scroll";
+
 	/** How much of each card shows under the next one. */
 	const PEEK_REM = 0.75;
 
@@ -130,7 +132,7 @@ const services = [
 
 		measure();
 		document.fonts?.ready.then(measure);
-		window.addEventListener("scroll", position, { passive: true });
+		onScroll(position);
 		window.addEventListener("resize", measure);
 		mq.addEventListener("change", measure);
 	}

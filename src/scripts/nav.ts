@@ -1,3 +1,5 @@
+import { onScroll } from "./scroll";
+
 /**
  * Nav bar: gets a blurred background once the page is scrolled, and shows the
  * centre logo (a "back to top" link) once the hero has scrolled up behind it.
@@ -14,8 +16,7 @@ export function initNav() {
 		nav.classList.toggle("show-logo", pastHero);
 		if (navLogo) navLogo.inert = !pastHero; // not clickable/focusable while hidden
 	};
-	update();
-	window.addEventListener("scroll", update, { passive: true });
+	onScroll(update);
 	window.addEventListener("resize", update, { passive: true });
 
 	navLogo?.addEventListener("click", (e) => {
