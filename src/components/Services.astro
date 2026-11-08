@@ -75,8 +75,6 @@ const services = [
 </style>
 
 <script>
-	import { onScroll } from "../scripts/scroll";
-
 	/** How much of each card shows under the next one. */
 	const PEEK_REM = 0.75;
 
@@ -87,6 +85,10 @@ const services = [
 	 * one lands the stage unsticks and everything leaves together.
 	 *
 	 * Depends on the CSS above making .stack-stage `position: sticky` on phones.
+	 *
+	 * Kept cheap: the scroll listener is only attached while the section is on
+	 * screen, layout is measured once (and again only if the width changes),
+	 * and a card's transform is only written when it actually moves.
 	 */
 	function initServicesStack() {
 		const mq = window.matchMedia("(max-width: 599px)");
@@ -97,43 +99,67 @@ const services = [
 		if (!stack || !stage || !cardsEl || !cards.length) return;
 
 		let natural: number[] = []; // each card's top in the plain list layout
+		let shifts: number[] = []; // each card's current upward shift
 		let peek = 0;
 		let pEnd = 0; // scroll distance it takes to stack every card
+		let stickTop = 0; // the stage's sticky `top`, in px
 		let active = false;
+		let onScreen = false;
+		let lastWidth = 0;
 
 		const position = () => {
-			if (!active) return;
-			const stickTop = parseFloat(getComputedStyle(stage).top) || 0;
 			const p = Math.min(Math.max(stickTop - stack.getBoundingClientRect().top, 0), pEnd);
 			cards.forEach((card, k) => {
-				const shift = Math.min(p, natural[k] - k * peek);
-				card.style.transform = shift > 0 ? `translateY(${-shift}px)` : "";
+				const shift = Math.max(Math.min(p, natural[k] - k * peek), 0);
+				if (shift === shifts[k]) return;
+				shifts[k] = shift;
+				card.style.transform = shift ? `translateY(${-shift}px)` : "";
 			});
 		};
 
+		const listen = () => {
+			const want = active && onScreen;
+			window.removeEventListener("scroll", position);
+			if (want) {
+				window.addEventListener("scroll", position, { passive: true });
+				position();
+			}
+		};
+
 		const measure = () => {
+			lastWidth = window.innerWidth;
 			// reset to the plain list layout before measuring
 			cards.forEach((c) => (c.style.transform = ""));
+			shifts = cards.map(() => 0);
 			cardsEl.style.height = "";
 			stack.style.height = "";
 			active = mq.matches;
-			if (!active) return;
-
-			peek = PEEK_REM * parseFloat(getComputedStyle(document.documentElement).fontSize);
-			natural = cards.map((c) => c.offsetTop - cards[0].offsetTop);
-			const stackedH = Math.max(...cards.map((c, k) => k * peek + c.offsetHeight));
-			pEnd = natural[natural.length - 1] - (cards.length - 1) * peek;
-			// the stage only needs to be as tall as the finished stack...
-			cardsEl.style.height = `${stackedH}px`;
-			// ...and the outer track adds the scroll distance it takes to stack them
-			stack.style.height = `${stage.offsetHeight + pEnd}px`;
-			position();
+			if (active) {
+				stickTop = parseFloat(getComputedStyle(stage).top) || 0;
+				peek = PEEK_REM * parseFloat(getComputedStyle(document.documentElement).fontSize);
+				natural = cards.map((c) => c.offsetTop - cards[0].offsetTop);
+				const stackedH = Math.max(...cards.map((c, k) => k * peek + c.offsetHeight));
+				pEnd = natural[natural.length - 1] - (cards.length - 1) * peek;
+				// the stage only needs to be as tall as the finished stack...
+				cardsEl.style.height = `${stackedH}px`;
+				// ...and the outer track adds the scroll distance it takes to stack them
+				stack.style.height = `${stage.offsetHeight + pEnd}px`;
+			}
+			listen();
 		};
+
+		new IntersectionObserver(([e]) => {
+			onScreen = e.isIntersecting;
+			listen();
+		}).observe(stack);
 
 		measure();
 		document.fonts?.ready.then(measure);
-		onScroll(position);
-		window.addEventListener("resize", measure);
+		// phones fire resize when the address bar shows/hides; only the width
+		// changing affects the layout
+		window.addEventListener("resize", () => {
+			if (window.innerWidth !== lastWidth) measure();
+		});
 		mq.addEventListener("change", measure);
 	}
 
