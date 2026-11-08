@@ -227,6 +227,27 @@ const { title, description } = Astro.props;
 		outline-offset: -2px;
 	}
 
+	/* scroll reveals (class added by the script in index.astro) */
+	.reveal {
+		opacity: 0;
+		transform: translateY(20px);
+		transition:
+			opacity 700ms ease,
+			transform 700ms ease;
+	}
+	.reveal.visible {
+		opacity: 1;
+		transform: none;
+	}
+	@media (max-width: 599px) {
+		/* on phones the stacking script moves the service cards, so they only
+		   fade in; a transform transition would make them lag the scroll */
+		#services .card.reveal {
+			transform: none;
+			transition: opacity 700ms ease;
+		}
+	}
+
 	/* gallery lightbox */
 	.lightbox {
 		width: 100vw;
