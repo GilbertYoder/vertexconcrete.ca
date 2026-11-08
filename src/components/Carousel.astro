@@ -155,14 +155,25 @@ const { label } = Astro.props;
 		const strip = wrap.querySelector<HTMLElement>(".carousel");
 		if (!strip) return;
 
-		const update = () => {
-			const max = strip.scrollWidth - strip.clientWidth;
-			wrap.classList.toggle("can-left", strip.scrollLeft > 4);
-			wrap.classList.toggle("can-right", strip.scrollLeft < max - 4);
-		};
-		strip.addEventListener("scroll", update, { passive: true });
-		new ResizeObserver(update).observe(strip);
-		update();
+		// "can-left" / "can-right" (which fade the edges and show the arrows)
+		// whenever the first / last slide isn't fully in the strip. Watched with
+		// an IntersectionObserver, so nothing runs per scroll event.
+		const first = strip.firstElementChild;
+		const last = strip.lastElementChild;
+		if (first && last) {
+			const edges = new IntersectionObserver(
+				(entries) => {
+					for (const e of entries) {
+						const cut = e.intersectionRatio < 0.95;
+						if (e.target === first) wrap.classList.toggle("can-left", cut);
+						if (e.target === last) wrap.classList.toggle("can-right", cut);
+					}
+				},
+				{ root: strip, threshold: 0.95 },
+			);
+			edges.observe(first);
+			edges.observe(last);
+		}
 
 		// arrows move by one slide
 		const step = (dir: number) => {
