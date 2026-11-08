@@ -1,15 +1,35 @@
 ---
 // Horizontal scroll-snap carousel. Each direct child of the slot becomes a slide.
+// The edges fade out when there's more to scroll that way, arrow buttons show
+// for mouse users, and the strip nudges sideways once when it first comes into
+// view so it's obvious it scrolls.
 interface Props {
 	label?: string;
 }
 const { label } = Astro.props;
 ---
-<div class="carousel" role="region" aria-label={label} tabindex="0">
-	<slot />
+<div class="carousel-wrap">
+	<div class="carousel" role="region" aria-label={label} tabindex="0">
+		<slot />
+	</div>
+	<button type="button" class="carousel-btn prev" aria-label="Scroll left">&#8249;</button>
+	<button type="button" class="carousel-btn next" aria-label="Scroll right">&#8250;</button>
 </div>
 
 <style>
+	@property --fade-l {
+		syntax: "<length>";
+		inherits: false;
+		initial-value: 0px;
+	}
+	@property --fade-r {
+		syntax: "<length>";
+		inherits: false;
+		initial-value: 0px;
+	}
+	.carousel-wrap {
+		position: relative;
+	}
 	.carousel {
 		display: flex;
 		gap: 1rem;
@@ -19,6 +39,20 @@ const { label } = Astro.props;
 		-webkit-overflow-scrolling: touch;
 		scrollbar-color: rgba(255, 255, 255, 0.3) transparent;
 		padding-bottom: 1rem;
+		/* fade the edge(s) that have more photos beyond them */
+		--fade-l: 0px;
+		--fade-r: 0px;
+		-webkit-mask-image: linear-gradient(to right, transparent, #000 var(--fade-l), #000 calc(100% - var(--fade-r)), transparent);
+		mask-image: linear-gradient(to right, transparent, #000 var(--fade-l), #000 calc(100% - var(--fade-r)), transparent);
+		transition:
+			--fade-l 0.3s,
+			--fade-r 0.3s;
+	}
+	.can-left .carousel {
+		--fade-l: 3rem;
+	}
+	.can-right .carousel {
+		--fade-r: 3rem;
 	}
 	.carousel > :global(*) {
 		flex: 0 0 80%;
@@ -30,4 +64,112 @@ const { label } = Astro.props;
 			flex-basis: 45%;
 		}
 	}
+
+	/* one-time sideways nudge (class added by the script) */
+	.nudge .carousel > :global(*) {
+		animation: carousel-nudge 1.1s ease-in-out 0.6s;
+	}
+	@keyframes carousel-nudge {
+		0%,
+		100% {
+			transform: translateX(0);
+		}
+		40% {
+			transform: translateX(-2.5rem);
+		}
+	}
+
+	/* arrow buttons: only for mouse/trackpad; touch users swipe */
+	.carousel-btn {
+		display: none;
+	}
+	@media (hover: hover) and (pointer: fine) {
+		.carousel-btn {
+			position: absolute;
+			top: calc(50% - 0.5rem); /* centre on the photos, not the scrollbar */
+			transform: translateY(-50%);
+			display: grid;
+			place-items: center;
+			width: 3rem;
+			height: 3rem;
+			font: inherit;
+			font-size: 2rem;
+			line-height: 1;
+			color: var(--cream);
+			background: rgba(21, 19, 17, 0.6);
+			border: 1px solid var(--glass-line);
+			border-radius: 999px;
+			cursor: pointer;
+			-webkit-backdrop-filter: blur(14px);
+			backdrop-filter: blur(14px);
+			opacity: 0;
+			pointer-events: none;
+			transition:
+				opacity 0.3s,
+				background 0.2s,
+				color 0.2s;
+		}
+		.carousel-btn.prev {
+			left: 0.75rem;
+		}
+		.carousel-btn.next {
+			right: 0.75rem;
+		}
+		.can-left .carousel-btn.prev,
+		.can-right .carousel-btn.next {
+			opacity: 1;
+			pointer-events: auto;
+		}
+		.carousel-btn:hover,
+		.carousel-btn:focus-visible {
+			color: var(--ink);
+			background: var(--accent);
+			outline: none;
+		}
+	}
+	@media (prefers-reduced-motion: reduce) {
+		.nudge .carousel > :global(*) {
+			animation: none;
+		}
+	}
 </style>
+
+<script>
+	const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)");
+
+	document.querySelectorAll<HTMLElement>(".carousel-wrap").forEach((wrap) => {
+		const strip = wrap.querySelector<HTMLElement>(".carousel");
+		if (!strip) return;
+
+		const update = () => {
+			const max = strip.scrollWidth - strip.clientWidth;
+			wrap.classList.toggle("can-left", strip.scrollLeft > 4);
+			wrap.classList.toggle("can-right", strip.scrollLeft < max - 4);
+		};
+		strip.addEventListener("scroll", update, { passive: true });
+		new ResizeObserver(update).observe(strip);
+		update();
+
+		// arrows move by one slide
+		const step = (dir: number) => {
+			const slide = strip.firstElementChild as HTMLElement | null;
+			const gap = parseFloat(getComputedStyle(strip).columnGap) || 0;
+			strip.scrollBy({ left: dir * ((slide?.offsetWidth ?? strip.clientWidth) + gap), behavior: "smooth" });
+		};
+		wrap.querySelector(".carousel-btn.prev")?.addEventListener("click", () => step(-1));
+		wrap.querySelector(".carousel-btn.next")?.addEventListener("click", () => step(1));
+
+		// nudge once the first time most of the strip is on screen
+		const io = new IntersectionObserver(
+			(entries) => {
+				if (!entries.some((e) => e.isIntersecting)) return;
+				io.disconnect();
+				if (reduceMotion.matches || strip.scrollLeft > 4 || !wrap.classList.contains("can-right")) return;
+				wrap.classList.add("nudge");
+				strip.addEventListener("animationend", () => wrap.classList.remove("nudge"), { once: true });
+			},
+			{ threshold: 0.6 },
+		);
+		io.observe(strip);
+	});
+</script>
